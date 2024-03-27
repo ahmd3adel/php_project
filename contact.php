@@ -1,6 +1,6 @@
 <?php
+session_start();
 require "connection_db.php";
-
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $jobTitle = $_POST['job_title'];
     $location = $_POST['location'];
@@ -9,10 +9,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $type = $_POST['type'];
     $subject = $_POST['subject'];
     $salary = $_POST['salary'];
+    $id = $_POST['id'];
     
     try {
-        $stmt = $pdo->prepare("INSERT INTO jobs (job_title,location,start_date,expire_date,salary , type , subject) VALUES 
-                                            (:job_title, :location, :start_date, :expire_date , :salary , :type , :subject)");
+        $stmt = $pdo->prepare("INSERT INTO jobs (job_title,location,start_date,expire_date,salary , type , subject , comp_id) VALUES 
+                                            (:job_title, :location, :start_date, :expire_date , :salary , :type , :subject , :id)");
         $stmt->bindParam(':job_title', $jobTitle);
         $stmt->bindParam(':location', $location);
         $stmt->bindParam(':start_date', $start_date);
@@ -20,9 +21,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->bindParam(':type', $type);
         $stmt->bindParam(':salary', $salary);
         $stmt->bindParam(':subject', $subject);
-        $stmt->execute();
-        
-        // Redirect to index.php after successful insertion
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();      
         header('location:index.php');
         exit(); // Make sure to exit after header redirect
     } catch (PDOException $e) {
@@ -86,7 +86,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="collapse navbar-collapse" id="navbarCollapse">
                 <div class="navbar-nav ms-auto p-4 p-lg-0">
                     <a href="index.html" class="nav-item nav-link">Home</a>
-                    <a href="about.html" class="nav-item nav-link">About</a>
+                    <a href="about.html" class="nav-item nav-link"><?=$_SESSION['comp_id']?></a>
                     <div class="nav-item dropdown">
                         <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Jobs</a>
                         <div class="dropdown-menu rounded-0 m-0">
@@ -184,6 +184,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                     <div class="col-12">
                                         <button class="btn btn-primary w-100 py-3" type="submit">Send Message</button>
                                     </div>
+                                    <input type="hidden" name="id" class="form-control"  value="<?=$_SESSION['comp_id']?>">
+
                                 </div>
                             </form>
                         </div>

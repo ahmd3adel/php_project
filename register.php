@@ -1,4 +1,5 @@
 <?php
+session_start();
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     require("connection_db.php");
     $fullName = $_POST["fullName"];
@@ -8,6 +9,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($userType == "applicant") {
         $stmt = $pdo->prepare("INSERT INTO applicants (username,email,password) VALUES (:fullName, :email, :password)");
         $stmt->execute(array(':fullName' => $fullName, ':email' => $email, ':password' => $password));
+        $_SESSION["username"] = $fullName;
         header("Location: index.php");
         exit();
     } elseif ($userType == "company") {

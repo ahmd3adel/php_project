@@ -1,22 +1,47 @@
 <?php
+session_start();
 require "connection_db.php";
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    
     // die($_POST['user_type']);
     $username = $_POST["username"];
     $password = $_POST["password"];
+    
     if($_POST['user_type'] == 'company'){
         $sql = "SELECT * FROM companies WHERE name = :username AND password = :password";
         $stmt = $pdo->prepare($sql);
+        
         $stmt->bindParam(":username", $username);
         $stmt->bindParam(":password", $password);
         $stmt->execute();
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
         if (count($result) > 0) {
             $_SESSION["username"] = $username;
-            header("location: index.php");
+        
+            $sql = "SELECT id FROM companies WHERE name = :username AND password = :password";
+            $stmt = $pdo->prepare($sql);
+        
+            $stmt->bindParam(":username", $username);
+            $stmt->bindParam(":password", $password);
+            $stmt->execute();
+        
+            // Fetch the result as an associative array
+            $comp_id = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+            if ($comp_id) {
+                // Here, $comp_id is an associative array, so access the 'id' field directly
+                $compId = $comp_id['id'];
+                $_SESSION["comp_id"] = $compId;
+                // Redirect to index.php after setting session variable
+                header("location: index.php");
+                exit; // Make sure to exit after redirection
+            } else {
+                echo "Invalid username or password";
+            }
         } else {
             echo "Invalid username or password";
         }
+        
     }
     else {
         $sql = "SELECT * FROM applicants WHERE username = :username AND password = :password";

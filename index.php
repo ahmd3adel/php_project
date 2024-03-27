@@ -1,6 +1,8 @@
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8">
     <title>JobEntry - Job Portal Website Template</title>
@@ -54,8 +56,17 @@
                 <div class="navbar-nav ms-auto p-4 p-lg-0">
                     <a href="index.php" class="nav-item nav-link active">Home</a>
                     <a href="job-list.html" class="nav-item nav-link">Jobs</a>
-                    <a href="login.php" class="nav-item nav-link">LOGIN</a>
-                    <a href="register.php" class="nav-item nav-link">REGISTER</a>
+                    <?php
+              if(isset($_SESSION['username'])){
+                echo '<a href="" class="nav-item nav-link">' . $_SESSION["username"] . '</a>';
+                echo '<a href="" class="nav-item nav-link">' . $_SESSION["comp_id"] . '</a>';
+                echo '<a href="login.php" class="nav-item nav-link">Logout</a>';
+            }   
+            else{
+                echo '<a href="login.php" class="nav-item nav-link">Login</a>';
+                echo '<a href="register.php" class="nav-item nav-link">REGISTER</a>';
+            }
+                    ?>
             
                 </div>
                 <a href="contact.php" class="btn btn-primary rounded-0 py-4 px-lg-5 d-none d-lg-block">Post A Job<i class="fa fa-arrow-right ms-3"></i></a>
@@ -127,13 +138,12 @@
                     <div class="tab-content">
                         <div id="tab-1" class="tab-pane fade show p-0 active">
                             <?php
-                            require_once "connection_db.php";
+                            require "connection_db.php";
                             $stmt = $pdo->prepare("SELECT * FROM jobs");
                             $stmt->execute();
                             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                             foreach ($rows as $row) {
-                             
                                 echo '
                                 <div class="job-item p-4 mb-4 text-capitalize">
                                     <div class="row g-4">
@@ -161,17 +171,7 @@
                                          }
 
                                             echo 'posted date ' . $row['start_date'] . ' expire date' . $row['expire_date'];
-                                            // if (isset($row['expire_date'])) {
-                                            //     $expireTimestamp = strtotime($row['expire_date']);
-                                            //     $currentTimestamp = time();
-                            
-                                            //     // Check if the expire date is before the current date and time
-                                            //     if ($expireTimestamp < $currentTimestamp) {
-                                            //         echo '<span class="text-danger">Expired</span>';
-                                            //     } else {
-                                            //         echo 'posted date ' . $row['start_date'] . ' expire date' . $row['expire_date'];
-                                            //     }
-                                            // }   
+                                 
                                                                                  echo '</div>
                                     </div>
                                 </div>';
@@ -182,107 +182,47 @@
 
                                 </div>
                         <div id="tab-2" class="tab-pane fade show p-0">
-                            <div class="job-item p-4 mb-4">
-                                <div class="row g-4">
-                                    <div class="col-sm-12 col-md-8 d-flex align-items-center">
-                                        <img class="flex-shrink-0 img-fluid border rounded" src="img/com-logo-1.jpg" alt="" style="width: 80px; height: 80px;">
-                                        <div class="text-start ps-4">
-                                            <h5 class="mb-3">Software Engineer</h5>
-                                            <span class="text-truncate me-3"><i class="fa fa-map-marker-alt text-primary me-2"></i>New York, USA</span>
-                                            <span class="text-truncate me-3"><i class="far fa-clock text-primary me-2"></i>Full Time</span>
-                                            <span class="text-truncate me-0"><i class="far fa-money-bill-alt text-primary me-2"></i>$123 - $456</span>
-                                        </div>
+                        <?php
+                                $stmt = $pdo->prepare("SELECT * FROM jobs WHERE id = :comp_id");
+                                $stmt->bindParam(':comp_id', $_SESSION['comp_id']);
+                            $stmt->execute();
+                            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                            foreach ($rows as $row) {
+                                echo '
+                                <div class="job-item p-4 mb-4 text-capitalize">
+                                    <div class="row g-4">
+                                        <div class="col-sm-12 col-md-8 d-flex align-items-center">
+                                            <div class="text-start ps-4">
+                                                <h5 class="mb-3">' . $row['job_title'] . '</h5>
+                                                <span class="text-truncate me-3"><i class="fa fa-map-marker-alt text-primary me-2"></i>' . $row['location'] . '</span>
+                                                <span class="text-truncate me-3"><i class="far fa-clock text-primary me-2"></i>' . $row['type'] . '</span>
+                                                <span class="text-truncate me-0"><i class="far fa-money-bill-alt text-primary me-2"></i>' . $row['salary'] . '</span>
+                                            </div>
+                                        </div>';
+                                        $expireTimestamp = strtotime($row['expire_date']);
+                                         $currentTimestamp = time();
+                                         if($expireTimestamp < $currentTimestamp){
+                                            echo '<div class="col-sm-12 col-md-4 d-flex flex-column align-items-start align-items-md-end justify-content-center">
+                                            <div class="d-flex mb-3">
+                                                <a class="btn btn-primary disabled" href="">Apply Now</a>
+                                            </div>';
+                                         }
+                                         else{
+                                            echo '<div class="col-sm-12 col-md-4 d-flex flex-column align-items-start align-items-md-end justify-content-center">
+                                            <div class="d-flex mb-3">
+                                                <a class="btn btn-primary" href="">Apply Now</a>
+                                            </div>';
+                                         }
+
+                                            echo 'posted date ' . $row['start_date'] . ' expire date' . $row['expire_date'];
+                                 
+                                                                                 echo '</div>
                                     </div>
-                                    <div class="col-sm-12 col-md-4 d-flex flex-column align-items-start align-items-md-end justify-content-center">
-                                        <div class="d-flex mb-3">
-                                            <a class="btn btn-light btn-square me-3" href=""><i class="far fa-heart text-primary"></i></a>
-                                            <a class="btn btn-primary" href="">Apply Now</a>
-                                        </div>
-                                        <small class="text-truncate"><i class="far fa-calendar-alt text-primary me-2"></i>Date Line: 01 Jan, 2045</small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="job-item p-4 mb-4">
-                                <div class="row g-4">
-                                    <div class="col-sm-12 col-md-8 d-flex align-items-center">
-                                        <img class="flex-shrink-0 img-fluid border rounded" src="img/com-logo-2.jpg" alt="" style="width: 80px; height: 80px;">
-                                        <div class="text-start ps-4">
-                                            <h5 class="mb-3">Marketing Manager</h5>
-                                            <span class="text-truncate me-3"><i class="fa fa-map-marker-alt text-primary me-2"></i>New York, USA</span>
-                                            <span class="text-truncate me-3"><i class="far fa-clock text-primary me-2"></i>Full Time</span>
-                                            <span class="text-truncate me-0"><i class="far fa-money-bill-alt text-primary me-2"></i>$123 - $456</span>
-                                        </div>
-                                    </div>
-                                    <div class="col-sm-12 col-md-4 d-flex flex-column align-items-start align-items-md-end justify-content-center">
-                                        <div class="d-flex mb-3">
-                                            <a class="btn btn-light btn-square me-3" href=""><i class="far fa-heart text-primary"></i></a>
-                                            <a class="btn btn-primary" href="">Apply Now</a>
-                                        </div>
-                                        <small class="text-truncate"><i class="far fa-calendar-alt text-primary me-2"></i>Date Line: 01 Jan, 2045</small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="job-item p-4 mb-4">
-                                <div class="row g-4">
-                                    <div class="col-sm-12 col-md-8 d-flex align-items-center">
-                                        <img class="flex-shrink-0 img-fluid border rounded" src="img/com-logo-3.jpg" alt="" style="width: 80px; height: 80px;">
-                                        <div class="text-start ps-4">
-                                            <h5 class="mb-3">Product Designer</h5>
-                                            <span class="text-truncate me-3"><i class="fa fa-map-marker-alt text-primary me-2"></i>New York, USA</span>
-                                            <span class="text-truncate me-3"><i class="far fa-clock text-primary me-2"></i>Full Time</span>
-                                            <span class="text-truncate me-0"><i class="far fa-money-bill-alt text-primary me-2"></i>$123 - $456</span>
-                                        </div>
-                                    </div>
-                                    <div class="col-sm-12 col-md-4 d-flex flex-column align-items-start align-items-md-end justify-content-center">
-                                        <div class="d-flex mb-3">
-                                            <a class="btn btn-light btn-square me-3" href=""><i class="far fa-heart text-primary"></i></a>
-                                            <a class="btn btn-primary" href="">Apply Now</a>
-                                        </div>
-                                        <small class="text-truncate"><i class="far fa-calendar-alt text-primary me-2"></i>Date Line: 01 Jan, 2045</small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="job-item p-4 mb-4">
-                                <div class="row g-4">
-                                    <div class="col-sm-12 col-md-8 d-flex align-items-center">
-                                        <img class="flex-shrink-0 img-fluid border rounded" src="img/com-logo-4.jpg" alt="" style="width: 80px; height: 80px;">
-                                        <div class="text-start ps-4">
-                                            <h5 class="mb-3">Creative Director</h5>
-                                            <span class="text-truncate me-3"><i class="fa fa-map-marker-alt text-primary me-2"></i>New York, USA</span>
-                                            <span class="text-truncate me-3"><i class="far fa-clock text-primary me-2"></i>Full Time</span>
-                                            <span class="text-truncate me-0"><i class="far fa-money-bill-alt text-primary me-2"></i>$123 - $456</span>
-                                        </div>
-                                    </div>
-                                    <div class="col-sm-12 col-md-4 d-flex flex-column align-items-start align-items-md-end justify-content-center">
-                                        <div class="d-flex mb-3">
-                                            <a class="btn btn-light btn-square me-3" href=""><i class="far fa-heart text-primary"></i></a>
-                                            <a class="btn btn-primary" href="">Apply Now</a>
-                                        </div>
-                                        <small class="text-truncate"><i class="far fa-calendar-alt text-primary me-2"></i>Date Line: 01 Jan, 2045</small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="job-item p-4 mb-4">
-                                <div class="row g-4">
-                                    <div class="col-sm-12 col-md-8 d-flex align-items-center">
-                                        <img class="flex-shrink-0 img-fluid border rounded" src="img/com-logo-5.jpg" alt="" style="width: 80px; height: 80px;">
-                                        <div class="text-start ps-4">
-                                            <h5 class="mb-3">Wordpress Developer</h5>
-                                            <span class="text-truncate me-3"><i class="fa fa-map-marker-alt text-primary me-2"></i>New York, USA</span>
-                                            <span class="text-truncate me-3"><i class="far fa-clock text-primary me-2"></i>Full Time</span>
-                                            <span class="text-truncate me-0"><i class="far fa-money-bill-alt text-primary me-2"></i>$123 - $456</span>
-                                        </div>
-                                    </div>
-                                    <div class="col-sm-12 col-md-4 d-flex flex-column align-items-start align-items-md-end justify-content-center">
-                                        <div class="d-flex mb-3">
-                                            <a class="btn btn-light btn-square me-3" href=""><i class="far fa-heart text-primary"></i></a>
-                                            <a class="btn btn-primary" href="">Apply Now</a>
-                                        </div>
-                                        <small class="text-truncate"><i class="far fa-calendar-alt text-primary me-2"></i>Date Line: 01 Jan, 2045</small>
-                                    </div>
-                                </div>
-                            </div>
-                            <a class="btn btn-primary py-3 px-5" href="">Browse More Jobs</a>
+                                </div>';
+                            }
+
+                            ?>
                         </div>
                         <div id="tab-3" class="tab-pane fade show p-0">
                             <div class="job-item p-4 mb-4">
